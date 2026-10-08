@@ -16,6 +16,15 @@ function log(msg) {
   console.log(line);
 }
 
+// Next.js menulis error saat memproses request lewat console.error: ikut dicatat ke file.
+const origConsoleError = console.error.bind(console);
+console.error = (...args) => {
+  const text = args.map((a) => (a && a.stack) || (typeof a === 'object' ? safeJson(a) : String(a))).join(' ');
+  try { fs.appendFileSync(LOG_FILE, `[${new Date().toISOString()}] console.error: ${text.slice(0, 4000)}\n`); } catch { /* abaikan */ }
+  origConsoleError(...args);
+};
+function safeJson(o) { try { return JSON.stringify(o); } catch { return String(o); } }
+
 process.on('uncaughtException', (e) => log('uncaughtException: ' + ((e && e.stack) || e)));
 process.on('unhandledRejection', (e) => log('unhandledRejection: ' + ((e && e.stack) || e)));
 
@@ -31,7 +40,18 @@ const app = next({ dev: false });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
-  createServer((req, res) => handle(req, res)).listen(port, () => {
+  createServer((req, res) => {
+    const t0 = Date.now();
+    res.on('finish', () => {
+      if (!req.url.startsWith('/_next/')) {
+        log(`req ${req.method} ${req.url.split('?')[0]} -> ${res.statusCode} (${Date.now() - t0}ms)`);
+      }
+    });
+    Promise.resolve().then(() => handle(req, res)).catch((e) => {
+      log('handler error: ' + ((e && e.stack) || e));
+      if (!res.headersSent) { res.statusCode = 500; res.end('Internal Server Error'); }
+    });
+  }).listen(port, () => {
     log(`Berita Acara siap di port ${port}`);
   });
 }).catch((e) => log('gagal prepare: ' + ((e && e.stack) || e)));
