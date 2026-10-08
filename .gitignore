@@ -48,3 +48,6 @@ step*.sql
 scripts/log-export.csv
 scripts/riwayat-export.csv
 scripts/master-item.csv
+
+# file upload lokal (dokumen & tanda tangan)
+/storage/

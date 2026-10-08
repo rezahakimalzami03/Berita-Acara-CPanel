@@ -24,7 +24,7 @@ async function main() {
     process.exit(1);
   }
 
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: (process.env.DATABASE_SSL === 'true' || /supabase\.(co|com)/.test(process.env.DATABASE_URL || '')) ? { rejectUnauthorized: false } : false });
   const hash = await bcrypt.hash(password, 10);
 
   try {

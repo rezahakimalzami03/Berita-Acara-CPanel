@@ -71,7 +71,7 @@ async function main() {
     console.error('❌ DATABASE_URL belum diset.');
     process.exit(1);
   }
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: (process.env.DATABASE_SSL === 'true' || /supabase\.(co|com)/.test(process.env.DATABASE_URL || '')) ? { rejectUnauthorized: false } : false });
 
   try {
     const ruanganIdByName = new Map();
