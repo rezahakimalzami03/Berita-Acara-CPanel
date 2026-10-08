@@ -51,3 +51,6 @@ scripts/master-item.csv
 
 # file upload lokal (dokumen & tanda tangan)
 /storage/
+
+# log debug server
+app-debug.log
