@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-navy-950: #0f1c30;
+  --color-navy-900: #16233a;
+  --color-navy-800: #1b3358;
+  --color-navy-700: #24406e;
+  --color-navy-600: #2f5389;
+  --color-navy-100: #e4e9f2;
+  --color-navy-50: #f2f4f9;
+
+  --color-vital-700: #175c37;
+  --color-vital-600: #1e7a46;
+  --color-vital-500: #279457;
+  --color-vital-100: #dcefe2;
+  --color-vital-50: #f0f8f3;
+
+  --color-seal-700: #8a5c17;
+  --color-seal-600: #b7791f;
+  --color-seal-100: #f6e9d1;
+  --color-seal-50: #fbf4e6;
+
+  --color-alert-700: #8f2418;
+  --color-alert-600: #b42318;
+  --color-alert-100: #f7dedb;
+  --color-alert-50: #fcefed;
+
+  --color-paper: #f6f7f9;
+  --color-line: #e2e5ea;
+}
+
+html, body {
+  height: 100%;
+  background: var(--color-paper);
+  color: var(--color-navy-900);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: var(--color-seal-100); }
+
+.thin-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
+.thin-scroll::-webkit-scrollbar-thumb { background: var(--color-navy-100); border-radius: 8px; }
+
+@keyframes seal-in {
+  0% { transform: scale(0.85) rotate(-6deg); opacity: 0; }
+  100% { transform: scale(1) rotate(-6deg); opacity: 1; }
+}
+.seal-badge { animation: seal-in 0.35s cubic-bezier(.2,.8,.2,1) both; }

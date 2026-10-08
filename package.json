@@ -1,0 +1,33 @@
+{
+  "name": "app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "create-user": "node scripts/create-user.js",
+    "migrate": "node scripts/migrate-from-csv.js"
+  },
+  "dependencies": {
+    "@react-pdf/renderer": "^4.9.0",
+    "@supabase/supabase-js": "^2.112.4",
+    "bcryptjs": "^3.0.3",
+    "docx": "^9.7.1",
+    "lucide-react": "^1.35.0",
+    "next": "16.3.3",
+    "next-auth": "^5.0.0-beta.32",
+    "pg": "^8.23.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "recharts": "^3.10.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "csv-parse": "^7.0.2",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.3",
+    "tailwindcss": "^4"
+  }
+}
