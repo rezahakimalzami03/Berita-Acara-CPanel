@@ -16,15 +16,20 @@ export const GET = withAuth(async () => {
      order by r.nama, v.nama`
   );
 
-  // ---- Mendekati / sudah kadaluarsa (dari master_item.exp_date, kalau diisi admin) ----
+  // ---- Sudah expired, <= 30 hari lagi, ATAU exp di bulan kalender yang sama (dari master_item.exp_date) ----
   const expRes = await query(
     `select mi.id, r.nama as ruangan, mi.nama, mi.satuan, mi.no_batch, mi.exp_date,
             (mi.exp_date < current_date) as sudah_expired,
-            (mi.exp_date - current_date)::int as sisa_hari
+            (mi.exp_date - current_date)::int as sisa_hari,
+            (date_trunc('month', mi.exp_date) = date_trunc('month', current_date)) as bulan_ini,
+            to_char(mi.exp_date, 'DD/MM/YYYY') as exp_fmt
      from master_item mi
      join ruangan r on r.id = mi.ruangan_id
      where mi.aktif = true and mi.exp_date is not null
-       and mi.exp_date <= current_date + interval '30 days'
+       and (
+         mi.exp_date <= current_date + interval '30 days'
+         or date_trunc('month', mi.exp_date) = date_trunc('month', current_date)
+       )
      order by mi.exp_date asc`
   );
 
@@ -43,9 +48,10 @@ export const GET = withAuth(async () => {
     nama: r.nama,
     satuan: r.satuan,
     noBatch: r.no_batch,
-    expDate: r.exp_date.toISOString().slice(0, 10).split('-').reverse().join('/'),
+    expDate: r.exp_fmt,
     sudahExpired: r.sudah_expired,
     sisaHari: r.sisa_hari,
+    bulanIni: r.bulan_ini,
   }));
 
   return jsonOk({

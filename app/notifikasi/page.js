@@ -102,7 +102,7 @@ export default function NotifikasiPage() {
                   </h3>
                 </div>
                 <p className="text-xs text-slate-400 mb-3">
-                  Item dengan tanggal kadaluarsa dalam 30 hari ke depan, atau sudah lewat.
+                  Item yang sudah lewat, kadaluarsa dalam 30 hari ke depan, atau kadaluarsa di bulan ini.
                   Data ini diisi manual oleh admin lewat halaman Master Ruangan.
                 </p>
                 <div className="overflow-x-auto thin-scroll">
@@ -126,7 +126,9 @@ export default function NotifikasiPage() {
                           <td className="py-1.5 px-1">
                             {k.sudahExpired
                               ? <Pill tone="alert">Sudah expired</Pill>
-                              : <Pill tone="alert">{k.sisaHari} hari lagi</Pill>}
+                              : k.sisaHari === 0
+                ? <Pill tone="alert">Hari ini</Pill>
+                : <Pill tone="alert">{k.sisaHari} hari lagi{k.bulanIni ? ' · bulan ini' : ''}</Pill>}
                           </td>
                         </tr>
                       ))}
