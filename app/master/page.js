@@ -175,12 +175,16 @@ export default function MasterPage() {
                           {r.nama}
                         </span>
                         <span className="text-[10px] text-slate-400">{r.jumlah_item}</span>
-                        <button onClick={() => { setEditingRuanganId(r.id); setEditingRuanganNama(r.nama); }}>
-                          <Pencil size={12} className="text-slate-400 hover:text-[var(--color-navy-700)]" />
-                        </button>
-                        <button onClick={() => toggleRuanganAktif(r)} title={r.aktif ? 'Nonaktifkan' : 'Aktifkan'}>
-                          <Trash2 size={12} className={r.aktif ? 'text-slate-400 hover:text-[var(--color-alert-600)]' : 'text-[var(--color-vital-600)]'} />
-                        </button>
+                        {isAdmin && (
+                          <>
+                            <button onClick={() => { setEditingRuanganId(r.id); setEditingRuanganNama(r.nama); }}>
+                              <Pencil size={12} className="text-slate-400 hover:text-[var(--color-navy-700)]" />
+                            </button>
+                            <button onClick={() => toggleRuanganAktif(r)} title={r.aktif ? 'Nonaktifkan' : 'Aktifkan'}>
+                              <Trash2 size={12} className={r.aktif ? 'text-slate-400 hover:text-[var(--color-alert-600)]' : 'text-[var(--color-vital-600)]'} />
+                            </button>
+                          </>
+                        )}
                       </>
                     )}
                   </div>
@@ -204,7 +208,11 @@ export default function MasterPage() {
           {/* Panel Item */}
           <Card className="p-4 md:p-5 min-w-0">
             {!selectedRuangan ? (
-              <p className="text-sm text-slate-400 text-center py-10">Pilih atau tambah ruangan dulu.</p>
+              <p className="text-sm text-slate-400 text-center py-10">
+                {!isAdmin && ruanganList.length === 0
+                  ? 'Anda belum diberi akses ke ruangan manapun. Hubungi admin untuk mengatur hak akses.'
+                  : 'Pilih atau tambah ruangan dulu.'}
+              </p>
             ) : (
               <>
                 <div className="flex items-center gap-2 mb-4">

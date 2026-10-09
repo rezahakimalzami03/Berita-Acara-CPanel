@@ -17,6 +17,7 @@ const TONE_BY_AKSI = {
   buat_user: 'vital',
   buat_item: 'vital',
   buat_ruangan: 'vital',
+  akses_master: 'seal',
 };
 
 export default function AuditLogPage() {

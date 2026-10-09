@@ -1,12 +1,13 @@
 import { query } from '@/lib/db';
-import { withAuth, jsonOk, jsonError } from '@/lib/api-helpers';
+import { withAuth, jsonOk, jsonError, canAccessRuangan, FORBIDDEN_RUANGAN } from '@/lib/api-helpers';
 import { logActivity } from '@/lib/audit';
 
 // GET ?ruanganId=... : daftar SEMUA item (termasuk nonaktif) di ruangan tsb.
-export const GET = withAuth(async (req) => {
+export const GET = withAuth(async (req, ctx, session) => {
   const { searchParams } = new URL(req.url);
   const ruanganId = searchParams.get('ruanganId');
   if (!ruanganId) return jsonError('ruanganId wajib diisi.');
+  if (!(await canAccessRuangan(session, ruanganId))) return jsonError(FORBIDDEN_RUANGAN, 403);
 
   const res = await query(
     `select id, urutan, nama, satuan, jumlah_standar, aktif, exp_date, no_batch
@@ -21,6 +22,7 @@ export const POST = withAuth(async (req, ctx, session) => {
   const { ruanganId, nama, satuan, jumlahStandar, expDate, noBatch } = await req.json();
   const namaTrim = (nama || '').trim();
   if (!ruanganId || !namaTrim) return jsonError('Ruangan & nama obat/alat wajib diisi.');
+  if (!(await canAccessRuangan(session, ruanganId))) return jsonError(FORBIDDEN_RUANGAN, 403);
 
   const urutanRes = await query(
     `select coalesce(max(urutan), 0) + 1 as next from master_item where ruangan_id = $1`,

@@ -3,11 +3,16 @@ import { withAuth, withAdminAuth, jsonOk, jsonError } from '@/lib/api-helpers';
 import { logActivity } from '@/lib/audit';
 
 // GET: daftar SEMUA ruangan (termasuk nonaktif) — utk halaman kelola.
-export const GET = withAuth(async () => {
+export const GET = withAuth(async (req, ctx, session) => {
+  // admin: semua ruangan; petugas: hanya ruangan yang diizinkan admin
+  const isAdmin = session.user.role === 'admin';
   const res = await query(
     `select r.id, r.nama, r.aktif,
             (select count(*)::int from master_item mi where mi.ruangan_id = r.id and mi.aktif = true) as jumlah_item
-     from ruangan r order by r.nama`
+     from ruangan r
+     where $1::boolean or r.id in (select ruangan_id from user_ruangan where user_id = $2)
+     order by r.nama`,
+    [isAdmin, session.user.id]
   );
   return jsonOk({ ruangan: res.rows });
 });

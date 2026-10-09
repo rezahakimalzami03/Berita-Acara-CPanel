@@ -11,6 +11,7 @@ const AKSI_LABEL = {
   edit_item: 'Ubah Item Master',
   nonaktif_item: 'Nonaktifkan Item Master',
   buat_ruangan: 'Tambah Ruangan',
+  akses_master: 'Atur Akses Master',
   edit_ruangan: 'Ubah Ruangan',
   nonaktif_ruangan: 'Nonaktifkan Ruangan',
 };

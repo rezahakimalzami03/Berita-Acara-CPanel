@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import Layout from '@/components/Layout';
 import { api } from '@/lib/api-client';
 import { Card, Button, Input, Select, Pill } from '@/components/ui';
-import { Plus, Loader2, AlertTriangle, Pencil, Check, X, ShieldAlert, KeyRound, UserX, UserCheck } from 'lucide-react';
+import { Plus, Loader2, AlertTriangle, Pencil, Check, X, ShieldAlert, KeyRound, UserX, UserCheck, Warehouse } from 'lucide-react';
 
 const emptyForm = { username: '', password: '', namaLengkap: '', role: 'petugas' };
 
@@ -23,7 +23,37 @@ export default function UsersPage() {
   const [resetId, setResetId] = useState(null);
   const [resetPassword, setResetPassword] = useState('');
 
+  const [akses, setAkses] = useState(null); // { user, ruanganList, selected:Set }
+  const [aksesSaving, setAksesSaving] = useState(false);
+
   const isAdmin = session?.user?.role === 'admin';
+
+  const openAkses = async (u) => {
+    setError('');
+    try {
+      const [rl, ua] = await Promise.all([api.adminRuanganList(), api.adminUserRuanganGet(u.id)]);
+      setAkses({ user: u, ruanganList: rl.ruangan, selected: new Set(ua.ruanganIds) });
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+  const toggleAkses = (rid) => setAkses((a) => {
+    const sel = new Set(a.selected);
+    sel.has(rid) ? sel.delete(rid) : sel.add(rid);
+    return { ...a, selected: sel };
+  });
+  const saveAkses = async () => {
+    setAksesSaving(true);
+    try {
+      await api.adminUserRuanganSet(akses.user.id, [...akses.selected]);
+      setAkses(null);
+      flash('Hak akses Master Ruangan disimpan.');
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setAksesSaving(false);
+    }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -231,6 +261,11 @@ export default function UsersPage() {
                                 <button className="p-1 -m-1" title="Edit" onClick={() => startEdit(u)}>
                                   <Pencil size={14} className="text-slate-400 hover:text-[var(--color-navy-700)]" />
                                 </button>
+                                {u.role !== 'admin' && (
+                                  <button className="p-1 -m-1" title="Atur akses Master Ruangan" onClick={() => openAkses(u)}>
+                                    <Warehouse size={14} className="text-slate-400 hover:text-[var(--color-navy-700)]" />
+                                  </button>
+                                )}
                                 <button className="p-1 -m-1" title="Reset password" onClick={() => { setResetId(u.id); setResetPassword(''); }}>
                                   <KeyRound size={14} className="text-slate-400 hover:text-[var(--color-navy-700)]" />
                                 </button>
@@ -256,6 +291,31 @@ export default function UsersPage() {
             </div>
           )}
         </Card>
+
+        {akses && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => !aksesSaving && setAkses(null)}>
+            <Card className="p-5 w-full max-w-sm max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <h3 className="font-display font-semibold text-[var(--color-navy-900)]">Akses Master Ruangan</h3>
+              <p className="text-xs text-slate-500 mt-1 mb-3">
+                {akses.user.nama_lengkap} hanya boleh mengubah data obat/alat di ruangan yang dicentang.
+              </p>
+              <div className="space-y-1 mb-4">
+                {akses.ruanganList.map((r) => (
+                  <label key={r.id} className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+                    <input type="checkbox" className="w-4 h-4" checked={akses.selected.has(r.id)} onChange={() => toggleAkses(r.id)} />
+                    <span className={`text-sm ${r.aktif ? 'text-[var(--color-navy-900)]' : 'text-slate-400 line-through'}`}>{r.nama}</span>
+                  </label>
+                ))}
+              </div>
+              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
+                <Button variant="ghost" onClick={() => setAkses(null)} disabled={aksesSaving}>Batal</Button>
+                <Button variant="primary" onClick={saveAkses} disabled={aksesSaving}>
+                  {aksesSaving && <Loader2 size={15} className="animate-spin" />} Simpan ({akses.selected.size})
+                </Button>
+              </div>
+            </Card>
+          </div>
+        )}
 
         {/* Modal sederhana reset password */}
         {resetId && (

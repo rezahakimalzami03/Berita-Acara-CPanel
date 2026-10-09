@@ -1,11 +1,15 @@
 import { query } from '@/lib/db';
-import { withAuth, jsonOk, jsonError } from '@/lib/api-helpers';
+import { withAuth, jsonOk, jsonError, canAccessRuangan, FORBIDDEN_RUANGAN } from '@/lib/api-helpers';
 import { logActivity } from '@/lib/audit';
 
 // PATCH: ubah nama/satuan/jumlah_standar/aktif/exp_date/no_batch satu item.
 export const PATCH = withAuth(async (req, { params }, session) => {
   const { id } = await params;
   const { nama, satuan, jumlahStandar, aktif, expDate, noBatch } = await req.json();
+
+  const own = await query('select ruangan_id from master_item where id = $1', [id]);
+  if (!own.rows[0]) return jsonError('Item tidak ditemukan.', 404);
+  if (!(await canAccessRuangan(session, own.rows[0].ruangan_id))) return jsonError(FORBIDDEN_RUANGAN, 403);
 
   const fields = [];
   const values = [];
@@ -37,6 +41,9 @@ export const PATCH = withAuth(async (req, { params }, session) => {
 // item ini TIDAK terpengaruh (berita_acara_item tersimpan sbg snapshot terpisah).
 export const DELETE = withAuth(async (req, { params }, session) => {
   const { id } = await params;
+  const own = await query('select ruangan_id from master_item where id = $1', [id]);
+  if (!own.rows[0]) return jsonError('Item tidak ditemukan.', 404);
+  if (!(await canAccessRuangan(session, own.rows[0].ruangan_id))) return jsonError(FORBIDDEN_RUANGAN, 403);
   const res = await query(`update master_item set aktif = false where id = $1 returning id, nama`, [id]);
   if (!res.rows[0]) return jsonError('Item tidak ditemukan.', 404);
   await logActivity(session, 'nonaktif_item', res.rows[0].nama);
