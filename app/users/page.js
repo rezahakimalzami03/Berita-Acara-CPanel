@@ -25,6 +25,7 @@ export default function UsersPage() {
 
   const [akses, setAkses] = useState(null); // { user, ruanganList, selected:Set }
   const [aksesSaving, setAksesSaving] = useState(false);
+  const [aksesError, setAksesError] = useState('');
 
   const isAdmin = session?.user?.role === 'admin';
 
@@ -32,6 +33,7 @@ export default function UsersPage() {
     setError('');
     try {
       const [rl, ua] = await Promise.all([api.adminRuanganList(), api.adminUserRuanganGet(u.id)]);
+      setAksesError('');
       setAkses({ user: u, ruanganList: rl.ruangan, selected: new Set(ua.ruanganIds) });
     } catch (e) {
       setError(e.message);
@@ -44,12 +46,13 @@ export default function UsersPage() {
   });
   const saveAkses = async () => {
     setAksesSaving(true);
+    setAksesError('');
     try {
       await api.adminUserRuanganSet(akses.user.id, [...akses.selected]);
       setAkses(null);
       flash('Hak akses Master Ruangan disimpan.');
     } catch (e) {
-      setError(e.message);
+      setAksesError(e.message);
     } finally {
       setAksesSaving(false);
     }
@@ -301,12 +304,25 @@ export default function UsersPage() {
               </p>
               <div className="space-y-1 mb-4">
                 {akses.ruanganList.map((r) => (
-                  <label key={r.id} className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-50 cursor-pointer">
-                    <input type="checkbox" className="w-4 h-4" checked={akses.selected.has(r.id)} onChange={() => toggleAkses(r.id)} />
+                  <div
+                    key={r.id}
+                    role="checkbox"
+                    aria-checked={akses.selected.has(r.id)}
+                    tabIndex={0}
+                    onClick={() => toggleAkses(r.id)}
+                    onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && (e.preventDefault(), toggleAkses(r.id))}
+                    className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-slate-50 cursor-pointer select-none"
+                  >
+                    <input type="checkbox" className="w-4 h-4 pointer-events-none" checked={akses.selected.has(r.id)} readOnly tabIndex={-1} />
                     <span className={`text-sm ${r.aktif ? 'text-[var(--color-navy-900)]' : 'text-slate-400 line-through'}`}>{r.nama}</span>
-                  </label>
+                  </div>
                 ))}
               </div>
+              {aksesError && (
+                <div className="rounded-lg bg-[var(--color-alert-50)] border border-[var(--color-alert-100)] text-[var(--color-alert-700)] text-xs px-3 py-2 mb-3">
+                  {aksesError}
+                </div>
+              )}
               <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
                 <Button variant="ghost" onClick={() => setAkses(null)} disabled={aksesSaving}>Batal</Button>
                 <Button variant="primary" onClick={saveAkses} disabled={aksesSaving}>

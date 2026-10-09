@@ -25,7 +25,7 @@ export const PUT = withAdminAuth(async (req, { params }, session) => {
     if (ruanganIds.length > 0) {
       await client.query(
         `insert into user_ruangan (user_id, ruangan_id)
-         select $1, r.id from ruangan r where r.id = any($2::uuid[])`,
+         select $1::uuid, r.id from ruangan r where r.id = any($2::uuid[])`,
         [id, ruanganIds]
       );
     }

@@ -1,8 +1,8 @@
 'use client';
 
-export function Card({ children, className = '' }) {
+export function Card({ children, className = '', ...props }) {
   return (
-    <div className={`bg-white rounded-2xl border border-[var(--color-line)] shadow-[0_1px_2px_rgba(15,28,48,0.04)] ${className}`}>
+    <div {...props} className={`bg-white rounded-2xl border border-[var(--color-line)] shadow-[0_1px_2px_rgba(15,28,48,0.04)] ${className}`}>
       {children}
     </div>
   );
