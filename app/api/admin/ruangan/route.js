@@ -1,5 +1,5 @@
 import { query } from '@/lib/db';
-import { withAuth, jsonOk, jsonError } from '@/lib/api-helpers';
+import { withAuth, withAdminAuth, jsonOk, jsonError } from '@/lib/api-helpers';
 import { logActivity } from '@/lib/audit';
 
 // GET: daftar SEMUA ruangan (termasuk nonaktif) — utk halaman kelola.
@@ -12,8 +12,8 @@ export const GET = withAuth(async () => {
   return jsonOk({ ruangan: res.rows });
 });
 
-// POST: tambah ruangan baru
-export const POST = withAuth(async (req, ctx, session) => {
+// POST: tambah ruangan baru — HANYA admin
+export const POST = withAdminAuth(async (req, ctx, session) => {
   const { nama } = await req.json();
   const namaTrim = (nama || '').trim();
   if (!namaTrim) return jsonError('Nama ruangan wajib diisi.');

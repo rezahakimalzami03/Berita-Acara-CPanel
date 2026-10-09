@@ -66,6 +66,7 @@ export default function MasterPage() {
   useEffect(() => { if (selectedId) loadItems(selectedId); }, [selectedId]); // eslint-disable-line
 
   const addRuangan = async () => {
+    if (!isAdmin) return;
     if (!newRuangan.trim()) return;
     try {
       const d = await api.adminRuanganCreate(newRuangan.trim());
@@ -186,16 +187,18 @@ export default function MasterPage() {
                 ))}
               </div>
             )}
-            <div className="flex gap-1.5">
-              <Input
-                placeholder="Ruangan baru..."
-                className="!py-1.5 !text-sm"
-                value={newRuangan}
-                onChange={(e) => setNewRuangan(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addRuangan()}
-              />
-              <Button variant="primary" className="!px-2.5 !py-1.5" onClick={addRuangan}><Plus size={15} /></Button>
-            </div>
+            {isAdmin && (
+              <div className="flex gap-1.5">
+                <Input
+                  placeholder="Ruangan baru..."
+                  className="!py-1.5 !text-sm"
+                  value={newRuangan}
+                  onChange={(e) => setNewRuangan(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addRuangan()}
+                />
+                <Button variant="primary" className="!px-2.5 !py-1.5" onClick={addRuangan}><Plus size={15} /></Button>
+              </div>
+            )}
           </Card>
 
           {/* Panel Item */}
