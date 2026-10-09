@@ -150,7 +150,7 @@ export default function FormPage() {
 
           <Card className="p-5 md:p-6">
             <SectionTitle step="1" title="Data Berita Acara" desc="Isi keterangan umum kejadian" />
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-[minmax(0,1fr)] sm:grid-cols-2 gap-4">
               <Field label="Jenis Berita Acara" required>
                 <Select value={form.jenis} onChange={set('jenis')}>
                   <option value="Pembukaan">Pembukaan</option>
@@ -248,7 +248,7 @@ export default function FormPage() {
 
           <Card className="p-5 md:p-6">
             <SectionTitle step="3" title="Tanda Tangan" desc={isPenutupan ? 'Petugas 1, Petugas 2, & Kepala Ruangan wajib' : 'Petugas 1 & Petugas 2 wajib'} />
-            <div className="grid sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-[minmax(0,1fr)] sm:grid-cols-2 gap-5">
               <div className="space-y-2.5">
                 <Field label="Nama Petugas 1" required><Input value={form.petugas1} onChange={set('petugas1')} /></Field>
                 <SignaturePad label="Petugas 1" value={ttd.petugas1} onChange={(v) => setTtd((t) => ({ ...t, petugas1: v }))} />

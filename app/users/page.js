@@ -149,7 +149,7 @@ export default function UsersPage() {
         {/* Form tambah user */}
         <Card className="p-5">
           <h3 className="font-display font-semibold text-[var(--color-navy-900)] mb-4">Tambah User Baru</h3>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-[minmax(0,1fr)] sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Input placeholder="Username" value={newUser.username} onChange={(e) => setNewUser((v) => ({ ...v, username: e.target.value }))} />
             <Input placeholder="Nama Lengkap" value={newUser.namaLengkap} onChange={(e) => setNewUser((v) => ({ ...v, namaLengkap: e.target.value }))} />
             <Input type="password" placeholder="Password (min. 6 karakter)" value={newUser.password} onChange={(e) => setNewUser((v) => ({ ...v, password: e.target.value }))} />

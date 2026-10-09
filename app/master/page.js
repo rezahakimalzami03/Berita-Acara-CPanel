@@ -146,9 +146,9 @@ export default function MasterPage() {
           </div>
         )}
 
-        <div className="grid md:grid-cols-[260px_1fr] gap-5">
+        <div className="grid grid-cols-[minmax(0,1fr)] md:grid-cols-[260px_minmax(0,1fr)] gap-5">
           {/* Panel Ruangan */}
-          <Card className="p-4 h-fit">
+          <Card className="p-4 h-fit min-w-0">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Ruangan / Unit</p>
             {loadingRuangan ? (
               <Loader2 size={16} className="animate-spin text-slate-400 mx-auto my-4" />
@@ -199,7 +199,7 @@ export default function MasterPage() {
           </Card>
 
           {/* Panel Item */}
-          <Card className="p-5">
+          <Card className="p-4 md:p-5 min-w-0">
             {!selectedRuangan ? (
               <p className="text-sm text-slate-400 text-center py-10">Pilih atau tambah ruangan dulu.</p>
             ) : (

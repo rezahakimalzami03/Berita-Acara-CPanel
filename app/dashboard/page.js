@@ -99,7 +99,7 @@ export default function DashboardPage() {
               </div>
             </Card>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-[minmax(0,1fr)] md:grid-cols-2 gap-6">
               <Card className="p-5 md:p-6">
                 <h3 className="font-display font-semibold text-[var(--color-navy-900)] mb-4">Total per Ruangan / Unit</h3>
                 <SimpleTable rows={[...data.perRuangan].sort((a, b) => b.total - a.total)} columns={[{ key: 'ruangan', label: 'Ruangan' }, { key: 'total', label: 'Total', align: 'right' }]} />
