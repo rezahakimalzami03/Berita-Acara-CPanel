@@ -1,7 +1,7 @@
 import { query } from '@/lib/db';
-import { withAuth, jsonOk } from '@/lib/api-helpers';
+import { withAuth, jsonOk, allowedRuanganIds } from '@/lib/api-helpers';
 
-export const GET = withAuth(async (req) => {
+export const GET = withAuth(async (req, ctx, session) => {
   const { searchParams } = new URL(req.url);
   const ruanganId = searchParams.get('ruanganId') || '';
   const jenis = searchParams.get('jenis') || '';
@@ -11,6 +11,8 @@ export const GET = withAuth(async (req) => {
   const conditions = [];
   const params = [];
   if (ruanganId) { params.push(ruanganId); conditions.push(`ba.ruangan_id = $${params.length}`); }
+  const allowed = await allowedRuanganIds(session);
+  if (allowed) { params.push(allowed); conditions.push(`ba.ruangan_id = any($${params.length}::uuid[])`); }
   if (jenis) { params.push(jenis); conditions.push(`ba.jenis = $${params.length}`); }
   const where = conditions.length ? `where ${conditions.join(' and ')}` : '';
 

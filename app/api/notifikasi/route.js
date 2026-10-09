@@ -1,9 +1,10 @@
 import { query } from '@/lib/db';
-import { withAuth, jsonOk } from '@/lib/api-helpers';
+import { withAuth, jsonOk, allowedRuanganIds } from '@/lib/api-helpers';
 
 // GET: dipakai semua user (petugas + admin) — bukan cuma admin, supaya
 // petugas di lapangan juga bisa lihat kalau ada obat yang perlu direstock.
-export const GET = withAuth(async () => {
+export const GET = withAuth(async (req, ctx, session) => {
+  const allowed = await allowedRuanganIds(session); // null = admin (semua ruangan)
   // ---- Stok kosong / menipis: dari sisa stok TERBARU per (ruangan, nama) ----
   // dibandingkan dengan jumlah_standar yang berlaku saat itu. sisa <= 0
   // dianggap "kosong". Hanya dihitung utk item yang masih aktif di master.
@@ -12,8 +13,9 @@ export const GET = withAuth(async () => {
      from v_sisa_stok_terakhir v
      join ruangan r on r.id = v.ruangan_id
      join master_item mi on mi.ruangan_id = v.ruangan_id and mi.nama = v.nama and mi.aktif = true
-     where v.sisa_stok <= 0
-     order by r.nama, v.nama`
+     where v.sisa_stok <= 0 and ($1::uuid[] is null or v.ruangan_id = any($1))
+     order by r.nama, v.nama`,
+    [allowed]
   );
 
   // ---- Sudah expired, <= 30 hari lagi, ATAU exp di bulan kalender yang sama (dari master_item.exp_date) ----
@@ -26,11 +28,13 @@ export const GET = withAuth(async () => {
      from master_item mi
      join ruangan r on r.id = mi.ruangan_id
      where mi.aktif = true and mi.exp_date is not null
+       and ($1::uuid[] is null or mi.ruangan_id = any($1))
        and (
          mi.exp_date <= current_date + interval '30 days'
          or date_trunc('month', mi.exp_date) = date_trunc('month', current_date)
        )
-     order by mi.exp_date asc`
+     order by mi.exp_date asc`,
+    [allowed]
   );
 
   const stokKosong = stokRes.rows.map((r) => ({

@@ -1,12 +1,13 @@
 import { query } from '@/lib/db';
-import { withAuth, jsonOk, jsonError } from '@/lib/api-helpers';
+import { withAuth, jsonOk, jsonError, canAccessRuangan, FORBIDDEN_RUANGAN } from '@/lib/api-helpers';
 
-export const GET = withAuth(async (req) => {
+export const GET = withAuth(async (req, ctx, session) => {
   const { searchParams } = new URL(req.url);
   const ruanganId = searchParams.get('ruanganId');
   const dari = searchParams.get('dari');
   const sampai = searchParams.get('sampai');
   if (!ruanganId) return jsonError('ruanganId wajib diisi.');
+  if (!(await canAccessRuangan(session, ruanganId))) return jsonError(FORBIDDEN_RUANGAN, 403);
   if (!dari || !sampai) return jsonError('dari & sampai wajib diisi.');
 
   const ruanganRes = await query('select id, nama from ruangan where id = $1', [ruanganId]);

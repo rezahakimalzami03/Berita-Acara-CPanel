@@ -1,5 +1,5 @@
 import { getPool } from '@/lib/db';
-import { withAuth, jsonOk, jsonError } from '@/lib/api-helpers';
+import { withAuth, jsonOk, jsonError, canAccessRuangan, FORBIDDEN_RUANGAN } from '@/lib/api-helpers';
 import { computeNomorBA } from '@/lib/nomor';
 import { uploadSignature, uploadFile } from '@/lib/storage';
 import { generateDocxBuffer } from '@/lib/docx-generator';
@@ -17,6 +17,7 @@ export const POST = withAuth(async (req, ctx, session) => {
   } = body;
 
   if (!jenis || !ruanganId || !tanggal) return jsonError('Jenis, Ruangan, dan Tanggal wajib diisi.');
+  if (!(await canAccessRuangan(session, ruanganId))) return jsonError(FORBIDDEN_RUANGAN, 403);
   if (jenis !== 'Pembukaan' && jenis !== 'Penutupan') return jsonError('Jenis tidak valid.');
   if (!Array.isArray(items) || items.length === 0) return jsonError('Daftar obat/alat kosong.');
 
