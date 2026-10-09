@@ -10,10 +10,10 @@ const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/rekap-ruangan', label: 'Rekap per Ruangan', short: 'Rekap', icon: Building2 },
   { to: '/notifikasi', label: 'Notifikasi', icon: Bell },
+  { to: '/master', label: 'Master Ruangan', short: 'Master', icon: Warehouse },
   { to: '/riwayat', label: 'Riwayat', icon: History },
 ];
 const adminNavItems = [
-  { to: '/master', label: 'Master Ruangan', short: 'Master', icon: Warehouse },
   { to: '/users', label: 'Kelola User', short: 'User', icon: Users },
   { to: '/audit-log', label: 'Log Aktivitas', short: 'Log', icon: ScrollText },
 ];

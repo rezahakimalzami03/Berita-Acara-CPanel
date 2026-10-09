@@ -1,9 +1,9 @@
 import { query } from '@/lib/db';
-import { withAdminAuth, jsonOk, jsonError } from '@/lib/api-helpers';
+import { withAuth, jsonOk, jsonError } from '@/lib/api-helpers';
 import { logActivity } from '@/lib/audit';
 
 // GET ?ruanganId=... : daftar SEMUA item (termasuk nonaktif) di ruangan tsb.
-export const GET = withAdminAuth(async (req) => {
+export const GET = withAuth(async (req) => {
   const { searchParams } = new URL(req.url);
   const ruanganId = searchParams.get('ruanganId');
   if (!ruanganId) return jsonError('ruanganId wajib diisi.');
@@ -17,7 +17,7 @@ export const GET = withAdminAuth(async (req) => {
 });
 
 // POST: tambah item baru ke ruangan tertentu.
-export const POST = withAdminAuth(async (req, ctx, session) => {
+export const POST = withAuth(async (req, ctx, session) => {
   const { ruanganId, nama, satuan, jumlahStandar, expDate, noBatch } = await req.json();
   const namaTrim = (nama || '').trim();
   if (!ruanganId || !namaTrim) return jsonError('Ruangan & nama obat/alat wajib diisi.');

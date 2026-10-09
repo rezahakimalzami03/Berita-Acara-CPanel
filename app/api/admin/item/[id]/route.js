@@ -1,9 +1,9 @@
 import { query } from '@/lib/db';
-import { withAdminAuth, jsonOk, jsonError } from '@/lib/api-helpers';
+import { withAuth, jsonOk, jsonError } from '@/lib/api-helpers';
 import { logActivity } from '@/lib/audit';
 
 // PATCH: ubah nama/satuan/jumlah_standar/aktif/exp_date/no_batch satu item.
-export const PATCH = withAdminAuth(async (req, { params }, session) => {
+export const PATCH = withAuth(async (req, { params }, session) => {
   const { id } = await params;
   const { nama, satuan, jumlahStandar, aktif, expDate, noBatch } = await req.json();
 
@@ -35,7 +35,7 @@ export const PATCH = withAdminAuth(async (req, { params }, session) => {
 
 // DELETE: soft-delete (aktif=false) — riwayat dokumen lama yang sudah memuat
 // item ini TIDAK terpengaruh (berita_acara_item tersimpan sbg snapshot terpisah).
-export const DELETE = withAdminAuth(async (req, { params }, session) => {
+export const DELETE = withAuth(async (req, { params }, session) => {
   const { id } = await params;
   const res = await query(`update master_item set aktif = false where id = $1 returning id, nama`, [id]);
   if (!res.rows[0]) return jsonError('Item tidak ditemukan.', 404);

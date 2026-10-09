@@ -62,7 +62,7 @@ export default function MasterPage() {
     }
   };
 
-  useEffect(() => { if (isAdmin) loadRuangan(); }, [isAdmin]); // eslint-disable-line
+  useEffect(() => { if (status === 'authenticated') loadRuangan(); }, [status]); // eslint-disable-line
   useEffect(() => { if (selectedId) loadItems(selectedId); }, [selectedId]); // eslint-disable-line
 
   const addRuangan = async () => {
@@ -127,18 +127,6 @@ export default function MasterPage() {
 
   if (status === 'loading') {
     return <Layout><div className="py-16 text-center text-slate-500"><Loader2 className="animate-spin inline" /></div></Layout>;
-  }
-
-  if (!isAdmin) {
-    return (
-      <Layout>
-        <div className="max-w-md mx-auto text-center py-16">
-          <ShieldAlert size={40} className="text-[var(--color-alert-600)] mx-auto mb-3" />
-          <h2 className="font-display font-bold text-lg text-[var(--color-navy-900)] mb-1.5">Akses Terbatas</h2>
-          <p className="text-sm text-slate-500">Halaman ini hanya bisa diakses oleh akun admin.</p>
-        </div>
-      </Layout>
-    );
   }
 
   const selectedRuangan = ruanganList.find((r) => r.id === selectedId);

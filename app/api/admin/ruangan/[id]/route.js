@@ -1,9 +1,9 @@
 import { query } from '@/lib/db';
-import { withAdminAuth, jsonOk, jsonError } from '@/lib/api-helpers';
+import { withAuth, jsonOk, jsonError } from '@/lib/api-helpers';
 import { logActivity } from '@/lib/audit';
 
 // PATCH: ubah nama dan/atau status aktif ruangan.
-export const PATCH = withAdminAuth(async (req, { params }, session) => {
+export const PATCH = withAuth(async (req, { params }, session) => {
   const { id } = await params;
   const { nama, aktif } = await req.json();
 
@@ -31,7 +31,7 @@ export const PATCH = withAdminAuth(async (req, { params }, session) => {
 // DELETE: soft-delete (set aktif=false) — TIDAK menghapus data historis
 // (berita_acara/log_pemakaian yang sudah ada tetap aman, hanya ruangan ini
 // tidak lagi muncul di dropdown pilihan ruangan untuk dokumen BARU).
-export const DELETE = withAdminAuth(async (req, { params }, session) => {
+export const DELETE = withAuth(async (req, { params }, session) => {
   const { id } = await params;
   const res = await query(`update ruangan set aktif = false where id = $1 returning id, nama`, [id]);
   if (!res.rows[0]) return jsonError('Ruangan tidak ditemukan.', 404);
