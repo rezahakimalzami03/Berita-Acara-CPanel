@@ -271,8 +271,8 @@ export default function FormPage() {
             <Textarea value={form.catatan} onChange={set('catatan')} placeholder="Opsional" />
           </Card>
 
-          <div className="flex justify-end sticky bottom-4 md:bottom-6">
-            <Button variant="success" className="px-6 py-3 text-base shadow-lg" onClick={() => submit(false)} disabled={submitting || !!dupConfirm}>
+          <div className="flex justify-end sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-6 z-20">
+            <Button variant="success" className="w-full md:w-auto px-6 py-3 text-base shadow-lg" onClick={() => submit(false)} disabled={submitting || !!dupConfirm}>
               {submitting && <Loader2 size={18} className="animate-spin" />}
               {submitting ? 'Membuat dokumen...' : 'Buat Dokumen Berita Acara'}
             </Button>

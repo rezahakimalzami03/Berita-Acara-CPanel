@@ -1,20 +1,21 @@
 'use client';
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { FileText, LayoutDashboard, History, ShieldCheck, LogOut, Warehouse, Building2, Users, Bell, ScrollText } from 'lucide-react';
 
 const navItems = [
-  { to: '/', label: 'Buat Berita Acara', icon: FileText },
+  { to: '/', label: 'Buat Berita Acara', short: 'Buat BA', icon: FileText },
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/rekap-ruangan', label: 'Rekap per Ruangan', icon: Building2 },
+  { to: '/rekap-ruangan', label: 'Rekap per Ruangan', short: 'Rekap', icon: Building2 },
   { to: '/notifikasi', label: 'Notifikasi', icon: Bell },
   { to: '/riwayat', label: 'Riwayat', icon: History },
 ];
 const adminNavItems = [
-  { to: '/master', label: 'Master Ruangan', icon: Warehouse },
-  { to: '/users', label: 'Kelola User', icon: Users },
-  { to: '/audit-log', label: 'Log Aktivitas', icon: ScrollText },
+  { to: '/master', label: 'Master Ruangan', short: 'Master', icon: Warehouse },
+  { to: '/users', label: 'Kelola User', short: 'User', icon: Users },
+  { to: '/audit-log', label: 'Log Aktivitas', short: 'Log', icon: ScrollText },
 ];
 
 export default function Layout({ children }) {
@@ -22,6 +23,13 @@ export default function Layout({ children }) {
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === 'admin';
   const allNavItems = isAdmin ? [...navItems, ...adminNavItems] : navItems;
+  const mobileNavRef = useRef(null);
+
+  // geser nav bawah supaya menu aktif selalu kelihatan
+  useEffect(() => {
+    const el = mobileNavRef.current?.querySelector('[data-active="true"]');
+    el?.scrollIntoView({ inline: 'center', block: 'nearest' });
+  }, [pathname, isAdmin]);
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -75,23 +83,27 @@ export default function Layout({ children }) {
         </button>
       </header>
 
-      <main className="flex-1 min-w-0 pb-20 md:pb-0">
+      <main className="flex-1 min-w-0 pb-24 md:pb-0">
         <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10">{children}</div>
       </main>
 
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-[var(--color-line)] flex">
-        {allNavItems.map(({ to, label, icon: Icon }) => {
+      <nav
+        ref={mobileNavRef}
+        className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-[var(--color-line)] flex overflow-x-auto no-scrollbar pb-[env(safe-area-inset-bottom)]"
+      >
+        {allNavItems.map(({ to, label, short, icon: Icon }) => {
           const active = to === '/' ? pathname === '/' : pathname.startsWith(to);
           return (
             <Link
               key={to}
               href={to}
-              className={`flex-1 flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
-                active ? 'text-[var(--color-navy-800)]' : 'text-slate-400'
+              data-active={active}
+              className={`flex-1 min-w-[68px] shrink-0 flex flex-col items-center gap-1 px-1 py-2.5 text-[11px] font-medium whitespace-nowrap border-t-2 ${
+                active ? 'text-[var(--color-navy-800)] border-[var(--color-navy-800)]' : 'text-slate-400 border-transparent'
               }`}
             >
               <Icon size={19} strokeWidth={2} />
-              {label}
+              {short || label}
             </Link>
           );
         })}

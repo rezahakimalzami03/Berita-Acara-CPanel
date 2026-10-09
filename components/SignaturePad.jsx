@@ -82,7 +82,7 @@ export default function SignaturePad({ label, value, onChange }) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setOpen(false)}>
-          <div className="bg-white rounded-2xl p-4 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl p-4 w-full max-w-sm max-h-[95vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <p className="text-sm font-semibold text-[var(--color-navy-900)] mb-2">Tanda Tangan: {label}</p>
             <canvas
               ref={canvasRef}
@@ -90,7 +90,7 @@ export default function SignaturePad({ label, value, onChange }) {
               height={220}
               className="w-full border-2 border-[var(--color-navy-800)] rounded-lg bg-white touch-none"
             />
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-3 flex-wrap">
               <button type="button" onClick={clear} className="flex-1 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold py-2.5">🗑️ Hapus</button>
               <button type="button" onClick={save} className="flex-1 rounded-lg bg-[var(--color-vital-600)] text-white text-sm font-semibold py-2.5">💾 Simpan</button>
               <button type="button" onClick={() => setOpen(false)} className="flex-1 rounded-lg bg-[var(--color-alert-600)] text-white text-sm font-semibold py-2.5">Tutup</button>

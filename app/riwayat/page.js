@@ -68,12 +68,12 @@ export default function RiwayatPage() {
         </div>
 
         <Card className="p-4 md:p-5">
-          <div className="flex flex-wrap gap-3">
-            <Select className="max-w-[180px]" value={ruanganId} onChange={(e) => { setRuanganId(e.target.value); setPage(0); }}>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Select className="sm:max-w-[200px]" value={ruanganId} onChange={(e) => { setRuanganId(e.target.value); setPage(0); }}>
               <option value="">Semua Ruangan</option>
               {ruanganList.map((r) => <option key={r.id} value={r.id}>{r.nama}</option>)}
             </Select>
-            <Select className="max-w-[160px]" value={jenis} onChange={(e) => { setJenis(e.target.value); setPage(0); }}>
+            <Select className="sm:max-w-[180px]" value={jenis} onChange={(e) => { setJenis(e.target.value); setPage(0); }}>
               <option value="">Semua Jenis</option>
               <option value="Pembukaan">Pembukaan</option>
               <option value="Penutupan">Penutupan</option>
@@ -99,17 +99,17 @@ export default function RiwayatPage() {
               {rows.map((r, i) => (
                 <div key={i} className="p-4 md:p-5 flex flex-wrap items-center gap-3 justify-between">
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <Pill tone={r.jenis === 'Pembukaan' ? 'vital' : 'seal'}>{r.jenis}</Pill>
                       <span className="font-mono text-xs text-slate-400">{r.nomor}</span>
                     </div>
-                    <p className="font-semibold text-[var(--color-navy-900)] text-sm">{r.ruangan} · {r.tanggalKejadian}</p>
+                    <p className="font-semibold text-[var(--color-navy-900)] text-sm break-words">{r.ruangan} · {r.tanggalKejadian}</p>
                     <p className="text-xs text-slate-400 mt-0.5">
                       Dibuat {r.timestamp}
                       {r.jenis === 'Pembukaan' && r.jumlahPemakaian !== null && ` · ${r.jumlahPemakaian} item terpakai`}
                     </p>
                   </div>
-                  <div className="flex gap-2 shrink-0">
+                  <div className="flex flex-wrap gap-2 sm:shrink-0 w-full sm:w-auto">
                     {r.docUrl && (
                       <a href={r.docUrl} target="_blank" rel="noreferrer">
                         <Button variant="ghost" className="!px-3 !py-2 text-xs"><FileText size={14} /> Word</Button>
@@ -138,7 +138,7 @@ export default function RiwayatPage() {
         </Card>
 
         {total > LIMIT && (
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
             <Button variant="ghost" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
               <ChevronLeft size={15} /> Sebelumnya
             </Button>
@@ -151,7 +151,7 @@ export default function RiwayatPage() {
 
         {confirmTarget && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => !deleting && setConfirmTarget(null)}>
-            <Card className="p-5 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <Card className="p-5 w-full max-w-sm max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-9 h-9 rounded-full bg-[var(--color-alert-50)] flex items-center justify-center shrink-0">
                   <AlertTriangle size={18} className="text-[var(--color-alert-600)]" />
@@ -166,7 +166,7 @@ export default function RiwayatPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2 justify-end">
+              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
                 <Button variant="ghost" onClick={() => setConfirmTarget(null)} disabled={deleting}>Batal</Button>
                 <Button variant="danger" onClick={doDelete} disabled={deleting}>
                   {deleting ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />} Ya, Hapus

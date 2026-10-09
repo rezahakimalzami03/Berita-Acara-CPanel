@@ -52,3 +52,15 @@ html, body {
   100% { transform: scale(1) rotate(-6deg); opacity: 1; }
 }
 .seal-badge { animation: seal-in 0.35s cubic-bezier(.2,.8,.2,1) both; }
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ---- responsive dasar ---- */
+html, body { overflow-x: hidden; }
+img, canvas, svg { max-width: 100%; }
+@media (max-width: 767px) {
+  /* 16px mencegah iOS auto-zoom saat fokus ke input */
+  input, select, textarea { font-size: 16px !important; }
+  button, [role="button"] { touch-action: manipulation; }
+}

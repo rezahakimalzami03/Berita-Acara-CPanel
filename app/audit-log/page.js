@@ -75,7 +75,7 @@ export default function AuditLogPage() {
         </div>
 
         <Card className="p-4">
-          <Select value={aksi} onChange={(e) => { setAksi(e.target.value); setPage(0); }} className="max-w-xs">
+          <Select value={aksi} onChange={(e) => { setAksi(e.target.value); setPage(0); }} className="sm:max-w-xs">
             <option value="">Semua Aksi</option>
             {Object.entries(aksiOptions).map(([key, label]) => (
               <option key={key} value={key}>{label}</option>
@@ -105,7 +105,7 @@ export default function AuditLogPage() {
                     <Pill tone={TONE_BY_AKSI[r.aksi] || 'navy'}>{r.aksiLabel}</Pill>
                     <span className="text-sm font-medium text-[var(--color-navy-900)]">{r.username}</span>
                   </div>
-                  {r.detail && <p className="text-sm text-slate-500 mt-1">{r.detail}</p>}
+                  {r.detail && <p className="text-sm text-slate-500 mt-1 break-words">{r.detail}</p>}
                   <p className="text-xs text-slate-400 mt-1">{r.timestamp}</p>
                 </div>
               </div>
@@ -117,7 +117,7 @@ export default function AuditLogPage() {
         )}
 
         {total > LIMIT && (
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
             <Button variant="ghost" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
               <ChevronLeft size={15} /> Sebelumnya
             </Button>

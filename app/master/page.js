@@ -249,9 +249,10 @@ export default function MasterPage() {
                                   <td className="py-1.5 px-1"><input type="number" className="w-full border border-[var(--color-line)] rounded px-1.5 py-1 text-sm" value={editingItem.jumlahStandar} onChange={(e) => setEditingItem((v) => ({ ...v, jumlahStandar: e.target.value }))} /></td>
                                   <td className="py-1.5 px-1"><input className="w-full border border-[var(--color-line)] rounded px-1.5 py-1 text-sm" value={editingItem.noBatch} onChange={(e) => setEditingItem((v) => ({ ...v, noBatch: e.target.value }))} /></td>
                                   <td className="py-1.5 px-1"><input type="date" className="w-full border border-[var(--color-line)] rounded px-1.5 py-1 text-sm" value={editingItem.expDate} onChange={(e) => setEditingItem((v) => ({ ...v, expDate: e.target.value }))} /></td>
-                                  <td className="py-1.5 px-1 flex gap-1.5">
-                                    <button onClick={() => saveItemEdit(it.id)}><Check size={15} className="text-[var(--color-vital-600)]" /></button>
-                                    <button onClick={() => setEditingItemId(null)}><X size={15} className="text-slate-400" /></button>
+                                  <td className="py-1.5 px-1"><div className="flex gap-3">
+                                    <button className="p-1 -m-1" onClick={() => saveItemEdit(it.id)}><Check size={15} className="text-[var(--color-vital-600)]" /></button>
+                                    <button className="p-1 -m-1" onClick={() => setEditingItemId(null)}><X size={15} className="text-slate-400" /></button>
+                                  </div>
                                   </td>
                                 </>
                               ) : (
@@ -269,11 +270,12 @@ export default function MasterPage() {
                                       </span>
                                     ) : '-'}
                                   </td>
-                                  <td className="py-1.5 px-1 flex gap-1.5">
-                                    <button onClick={() => startEditItem(it)}><Pencil size={13} className="text-slate-400 hover:text-[var(--color-navy-700)]" /></button>
-                                    <button onClick={() => toggleItemAktif(it)} title={it.aktif ? 'Nonaktifkan' : 'Aktifkan'}>
+                                  <td className="py-1.5 px-1"><div className="flex gap-3">
+                                    <button className="p-1 -m-1" onClick={() => startEditItem(it)}><Pencil size={13} className="text-slate-400 hover:text-[var(--color-navy-700)]" /></button>
+                                    <button className="p-1 -m-1" onClick={() => toggleItemAktif(it)} title={it.aktif ? 'Nonaktifkan' : 'Aktifkan'}>
                                       <Trash2 size={13} className={it.aktif ? 'text-slate-400 hover:text-[var(--color-alert-600)]' : 'text-[var(--color-vital-600)]'} />
                                     </button>
+                                  </div>
                                   </td>
                                 </>
                               )}
@@ -288,13 +290,13 @@ export default function MasterPage() {
                   </div>
                 )}
 
-                <div className="flex flex-wrap gap-2 pt-3 border-t border-[var(--color-line)]">
-                  <input placeholder="Nama obat/alat" className="flex-1 min-w-[160px] rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm" value={newItem.nama} onChange={(e) => setNewItem((v) => ({ ...v, nama: e.target.value }))} />
-                  <input placeholder="Satuan" className="w-20 rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm" value={newItem.satuan} onChange={(e) => setNewItem((v) => ({ ...v, satuan: e.target.value }))} />
-                  <input type="number" placeholder="Standar" className="w-24 rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm" value={newItem.jumlahStandar} onChange={(e) => setNewItem((v) => ({ ...v, jumlahStandar: e.target.value }))} />
-                  <input placeholder="No. Batch (opsional)" className="w-32 rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm" value={newItem.noBatch} onChange={(e) => setNewItem((v) => ({ ...v, noBatch: e.target.value }))} />
-                  <input type="date" placeholder="Exp. Date" className="w-36 rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm" value={newItem.expDate} onChange={(e) => setNewItem((v) => ({ ...v, expDate: e.target.value }))} />
-                  <Button variant="primary" onClick={addItem}><Plus size={15} /> Tambah</Button>
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 pt-3 border-t border-[var(--color-line)]">
+                  <input placeholder="Nama obat/alat" className="col-span-2 sm:flex-1 sm:min-w-[160px] rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm" value={newItem.nama} onChange={(e) => setNewItem((v) => ({ ...v, nama: e.target.value }))} />
+                  <input placeholder="Satuan" className="sm:w-20 rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm" value={newItem.satuan} onChange={(e) => setNewItem((v) => ({ ...v, satuan: e.target.value }))} />
+                  <input type="number" placeholder="Standar" className="sm:w-24 rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm" value={newItem.jumlahStandar} onChange={(e) => setNewItem((v) => ({ ...v, jumlahStandar: e.target.value }))} />
+                  <input placeholder="No. Batch (opsional)" className="sm:w-32 rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm" value={newItem.noBatch} onChange={(e) => setNewItem((v) => ({ ...v, noBatch: e.target.value }))} />
+                  <input type="date" placeholder="Exp. Date" className="sm:w-36 rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm" value={newItem.expDate} onChange={(e) => setNewItem((v) => ({ ...v, expDate: e.target.value }))} />
+                  <Button variant="primary" className="col-span-2 sm:col-span-1" onClick={addItem}><Plus size={15} /> Tambah</Button>
                 </div>
               </>
             )}

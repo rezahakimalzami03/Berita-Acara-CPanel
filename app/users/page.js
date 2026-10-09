@@ -227,15 +227,15 @@ export default function UsersPage() {
                               <Pill tone={u.aktif ? 'vital' : 'alert'}>{u.aktif ? 'Aktif' : 'Nonaktif'}</Pill>
                             </td>
                             <td className="py-2 px-1">
-                              <div className="flex gap-2">
-                                <button title="Edit" onClick={() => startEdit(u)}>
+                              <div className="flex gap-3">
+                                <button className="p-1 -m-1" title="Edit" onClick={() => startEdit(u)}>
                                   <Pencil size={14} className="text-slate-400 hover:text-[var(--color-navy-700)]" />
                                 </button>
-                                <button title="Reset password" onClick={() => { setResetId(u.id); setResetPassword(''); }}>
+                                <button className="p-1 -m-1" title="Reset password" onClick={() => { setResetId(u.id); setResetPassword(''); }}>
                                   <KeyRound size={14} className="text-slate-400 hover:text-[var(--color-navy-700)]" />
                                 </button>
                                 {!isSelf && (
-                                  <button title={u.aktif ? 'Nonaktifkan' : 'Aktifkan'} onClick={() => toggleAktif(u)}>
+                                  <button className="p-1 -m-1" title={u.aktif ? 'Nonaktifkan' : 'Aktifkan'} onClick={() => toggleAktif(u)}>
                                     {u.aktif
                                       ? <UserX size={14} className="text-slate-400 hover:text-[var(--color-alert-600)]" />
                                       : <UserCheck size={14} className="text-[var(--color-vital-600)]" />}
@@ -260,7 +260,7 @@ export default function UsersPage() {
         {/* Modal sederhana reset password */}
         {resetId && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => setResetId(null)}>
-            <Card className="p-5 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <Card className="p-5 w-full max-w-sm max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <h3 className="font-display font-semibold text-[var(--color-navy-900)] mb-3">Reset Password</h3>
               <Input
                 type="password"
@@ -269,7 +269,7 @@ export default function UsersPage() {
                 onChange={(e) => setResetPassword(e.target.value)}
                 autoFocus
               />
-              <div className="flex gap-2 mt-3 justify-end">
+              <div className="flex flex-col-reverse sm:flex-row gap-2 mt-3 sm:justify-end">
                 <Button variant="ghost" onClick={() => setResetId(null)}>Batal</Button>
                 <Button variant="primary" onClick={() => submitReset(resetId)}>Simpan</Button>
               </div>
