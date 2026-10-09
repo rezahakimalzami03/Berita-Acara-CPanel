@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import Layout from '@/components/Layout';
 import { api } from '@/lib/api-client';
 import { Card, Button, Input, Pill } from '@/components/ui';
+import { confirmAction, alertError, alertWarning, alertSuccess } from '@/lib/alert';
 import { Plus, Trash2, Loader2, AlertTriangle, Pencil, Check, X, ShieldAlert } from 'lucide-react';
 
 const emptyNewItem = { nama: '', satuan: '', jumlahStandar: '', expDate: '', noBatch: '' };
@@ -67,37 +68,75 @@ export default function MasterPage() {
 
   const addRuangan = async () => {
     if (!isAdmin) return;
-    if (!newRuangan.trim()) return;
+    const nama = newRuangan.trim();
+    if (!nama) return alertWarning('Nama ruangan wajib diisi.');
+    if (ruanganList.some((r) => r.nama.toLowerCase() === nama.toLowerCase())) {
+      return alertWarning(`Ruangan "${nama}" sudah ada.`);
+    }
+    if (!(await confirmAction({ title: 'Tambah ruangan?', text: `Ruangan "${nama}" akan ditambahkan.`, confirmText: 'Ya, tambah' }))) return;
     try {
-      const d = await api.adminRuanganCreate(newRuangan.trim());
+      const d = await api.adminRuanganCreate(nama);
       setNewRuangan('');
       await loadRuangan();
       setSelectedId(d.ruangan.id);
-    } catch (e) { setError(e.message); }
+      alertSuccess(`Ruangan "${nama}" ditambahkan.`);
+    } catch (e) { alertError(e.message); }
   };
 
   const saveRuanganRename = async (id) => {
+    const nama = editingRuanganNama.trim();
+    if (!nama) return alertWarning('Nama ruangan tidak boleh kosong.');
+    const lama = ruanganList.find((r) => r.id === id)?.nama;
+    if (nama === lama) return setEditingRuanganId(null);
+    if (!(await confirmAction({ title: 'Ubah nama ruangan?', html: `<b>${lama}</b> &rarr; <b>${nama.replace(/</g, '&lt;')}</b>`, confirmText: 'Ya, ubah' }))) return;
     try {
-      await api.adminRuanganUpdate(id, { nama: editingRuanganNama });
+      await api.adminRuanganUpdate(id, { nama });
       setEditingRuanganId(null);
       await loadRuangan();
-    } catch (e) { setError(e.message); }
+      alertSuccess('Nama ruangan diubah.');
+    } catch (e) { alertError(e.message); }
   };
 
   const toggleRuanganAktif = async (r) => {
+    const nonaktifkan = r.aktif;
+    const ok = await confirmAction({
+      title: nonaktifkan ? 'Nonaktifkan ruangan?' : 'Aktifkan ruangan?',
+      text: nonaktifkan
+        ? `Ruangan "${r.nama}" tidak akan muncul lagi untuk Berita Acara baru. Data lama tetap aman.`
+        : `Ruangan "${r.nama}" akan bisa dipilih kembali.`,
+      confirmText: nonaktifkan ? 'Ya, nonaktifkan' : 'Ya, aktifkan',
+      icon: nonaktifkan ? 'warning' : 'question',
+      danger: nonaktifkan,
+    });
+    if (!ok) return;
     try {
       await api.adminRuanganUpdate(r.id, { aktif: !r.aktif });
       await loadRuangan();
-    } catch (e) { setError(e.message); }
+      alertSuccess(nonaktifkan ? 'Ruangan dinonaktifkan.' : 'Ruangan diaktifkan.');
+    } catch (e) { alertError(e.message); }
+  };
+
+  const validateItem = (v) => {
+    const msgs = [];
+    if (!(v.nama || '').trim()) msgs.push('Nama obat/alat wajib diisi.');
+    if (!(v.satuan || '').trim()) msgs.push('Satuan wajib diisi.');
+    const jml = Number(v.jumlahStandar);
+    if (v.jumlahStandar === '' || v.jumlahStandar === undefined || v.jumlahStandar === null || Number.isNaN(jml)) {
+      msgs.push('Jumlah standar wajib diisi dengan angka.');
+    } else if (jml < 0) msgs.push('Jumlah standar tidak boleh negatif.');
+    return msgs;
   };
 
   const addItem = async () => {
-    if (!newItem.nama.trim()) return;
+    const msgs = validateItem(newItem);
+    if (msgs.length) return alertWarning(msgs);
+    if (!(await confirmAction({ title: 'Tambah obat/alat?', text: `"${newItem.nama.trim()}" akan ditambahkan ke ${selectedRuangan?.nama || 'ruangan ini'}.`, confirmText: 'Ya, tambah' }))) return;
     try {
       await api.adminItemCreate({ ruanganId: selectedId, ...newItem });
       setNewItem(emptyNewItem);
       await loadItems(selectedId);
-    } catch (e) { setError(e.message); }
+      alertSuccess('Obat/alat ditambahkan.');
+    } catch (e) { alertError(e.message); }
   };
 
   const startEditItem = (it) => {
@@ -112,18 +151,34 @@ export default function MasterPage() {
   };
 
   const saveItemEdit = async (id) => {
+    const msgs = validateItem(editingItem);
+    if (msgs.length) return alertWarning(msgs);
+    if (!(await confirmAction({ title: 'Simpan perubahan?', text: `Perubahan pada "${editingItem.nama.trim()}" akan disimpan.`, confirmText: 'Ya, simpan' }))) return;
     try {
       await api.adminItemUpdate(id, editingItem);
       setEditingItemId(null);
       await loadItems(selectedId);
-    } catch (e) { setError(e.message); }
+      alertSuccess('Perubahan disimpan.');
+    } catch (e) { alertError(e.message); }
   };
 
   const toggleItemAktif = async (it) => {
+    const nonaktifkan = it.aktif;
+    const ok = await confirmAction({
+      title: nonaktifkan ? 'Nonaktifkan obat/alat?' : 'Aktifkan obat/alat?',
+      text: nonaktifkan
+        ? `"${it.nama}" tidak akan muncul di Berita Acara baru. Riwayat lama tidak terpengaruh.`
+        : `"${it.nama}" akan muncul kembali di Berita Acara baru.`,
+      confirmText: nonaktifkan ? 'Ya, nonaktifkan' : 'Ya, aktifkan',
+      icon: nonaktifkan ? 'warning' : 'question',
+      danger: nonaktifkan,
+    });
+    if (!ok) return;
     try {
       await api.adminItemUpdate(it.id, { aktif: !it.aktif });
       await loadItems(selectedId);
-    } catch (e) { setError(e.message); }
+      alertSuccess(nonaktifkan ? 'Obat/alat dinonaktifkan.' : 'Obat/alat diaktifkan.');
+    } catch (e) { alertError(e.message); }
   };
 
   if (status === 'loading') {

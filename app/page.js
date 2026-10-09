@@ -5,6 +5,7 @@ import { api } from '@/lib/api-client';
 import { Card, Button, Field, Input, Select, Textarea, SectionTitle } from '@/components/ui';
 import SignaturePad from '@/components/SignaturePad';
 import SealBadge from '@/components/SealBadge';
+import { confirmAction, alertError, alertWarning } from '@/lib/alert';
 import { CheckCircle2, AlertTriangle, Loader2, ExternalLink } from 'lucide-react';
 
 const emptyForm = {
@@ -70,20 +71,55 @@ export default function FormPage() {
     ...form, ruanganNama, items, ttd, confirmDuplicate: !!confirmDuplicate,
   });
 
+  const validate = () => {
+    const msgs = [];
+    if (!form.ruanganId) msgs.push('Ruangan / Unit belum dipilih.');
+    if (!form.tanggal) msgs.push('Tanggal kejadian belum diisi.');
+    if (form.ruanganId && items.length === 0) msgs.push('Daftar obat/alat kosong untuk ruangan ini.');
+    const bad = items.filter((it) => it.kolomE !== '' && it.kolomE !== undefined && (Number.isNaN(Number(it.kolomE)) || Number(it.kolomE) < 0));
+    if (bad.length) msgs.push(`Jumlah tidak valid (harus angka ≥ 0) pada: ${bad.slice(0, 3).map((b) => b.nama).join(', ')}${bad.length > 3 ? ', ...' : ''}.`);
+    const roles = isPenutupan
+      ? [['petugas1', 'Petugas 1'], ['petugas2', 'Petugas 2'], ['kepala', 'Kepala Ruangan']]
+      : [['petugas1', 'Petugas 1'], ['petugas2', 'Petugas 2']];
+    for (const [k, label] of roles) {
+      if (!(form[k] || '').trim()) msgs.push(`Nama ${label} belum diisi.`);
+      if (!ttd[k]) msgs.push(`Tanda tangan ${label} belum diisi.`);
+    }
+    return msgs;
+  };
+
   const submit = async (confirmDuplicate = false) => {
     setError('');
+    if (!confirmDuplicate) {
+      const msgs = validate();
+      if (msgs.length) return alertWarning(msgs, 'Data belum lengkap');
+      const ok = await confirmAction({
+        title: `Buat dokumen ${form.jenis}?`,
+        html: `Ruangan: <b>${ruanganNama.replace(/</g, '&lt;')}</b><br/>Tanggal: <b>${form.tanggal}</b><br/><span style="font-size:.85rem;color:#64748b">Pastikan data dan tanda tangan sudah benar.</span>`,
+        confirmText: 'Ya, buat dokumen',
+      });
+      if (!ok) return;
+    }
     setSubmitting(true);
     try {
       const res = await api.generate(buildPayload(confirmDuplicate));
       if (res.duplicate) {
-        setDupConfirm(res.dupInfo);
         setSubmitting(false);
+        const lanjut = await confirmAction({
+          title: 'Kemungkinan Berita Acara ganda',
+          html: `Sudah ada Berita Acara serupa: <b>${res.dupInfo.nomor}</b>.<br/>Tetap buat dokumen baru?`,
+          confirmText: 'Ya, tetap buat',
+          icon: 'warning',
+          danger: true,
+        });
+        if (lanjut) return submit(true);
         return;
       }
       setSuccess(res);
       setDupConfirm(null);
     } catch (e) {
       setError(e.message);
+      alertError(e.message, 'Gagal membuat dokumen');
     } finally {
       setSubmitting(false);
     }
@@ -130,21 +166,6 @@ export default function FormPage() {
           {error && (
             <div className="rounded-xl bg-[var(--color-alert-50)] border border-[var(--color-alert-100)] text-[var(--color-alert-700)] text-sm px-4 py-3 flex items-start gap-2">
               <AlertTriangle size={16} className="mt-0.5 shrink-0" /> {error}
-            </div>
-          )}
-
-          {dupConfirm && (
-            <div className="rounded-xl bg-[var(--color-seal-50)] border border-[var(--color-seal-100)] px-4 py-4">
-              <p className="text-sm font-semibold text-[var(--color-seal-700)] flex items-center gap-2 mb-1.5">
-                <AlertTriangle size={16} /> Kemungkinan Berita Acara Ganda
-              </p>
-              <p className="text-sm text-[var(--color-navy-900)] mb-3">
-                Sudah ada Berita Acara serupa: <strong>{dupConfirm.nomor}</strong>. Tetap buat dokumen baru?
-              </p>
-              <div className="flex gap-2">
-                <Button variant="danger" onClick={() => submit(true)}>Ya, tetap buat</Button>
-                <Button variant="ghost" onClick={() => setDupConfirm(null)}>Batalkan</Button>
-              </div>
             </div>
           )}
 

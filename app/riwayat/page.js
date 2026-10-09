@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Layout from '@/components/Layout';
 import { api } from '@/lib/api-client';
+import { confirmAction, alertError, alertSuccess } from '@/lib/alert';
 import { Card, Select, Button, Pill } from '@/components/ui';
 import { Loader2, FileText, FileDown, ChevronLeft, ChevronRight, AlertTriangle, Trash2, X } from 'lucide-react';
 
@@ -19,7 +20,6 @@ export default function RiwayatPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [confirmTarget, setConfirmTarget] = useState(null); // { id, nomor }
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -42,16 +42,23 @@ export default function RiwayatPage() {
 
   useEffect(() => { load(); }, [ruanganId, jenis, page]); // eslint-disable-line
 
-  const doDelete = async () => {
-    if (!confirmTarget) return;
+  const askDelete = async (r) => {
+    const ok = await confirmAction({
+      title: 'Hapus Berita Acara?',
+      html: `Nomor <b>${r.nomor}</b> akan dihapus permanen beserta data pemakaian & rekapnya di Dashboard.<br/>Tindakan ini <b>tidak bisa dibatalkan</b>.`,
+      confirmText: 'Ya, hapus',
+      icon: 'warning',
+      danger: true,
+    });
+    if (!ok) return;
     setDeleting(true);
     setError('');
     try {
-      await api.riwayatDelete(confirmTarget.id);
-      setConfirmTarget(null);
+      await api.riwayatDelete(r.id);
       await load();
+      alertSuccess('Berita Acara dihapus.');
     } catch (e) {
-      setError(e.message);
+      alertError(e.message);
     } finally {
       setDeleting(false);
     }
@@ -124,7 +131,8 @@ export default function RiwayatPage() {
                       <Button
                         variant="danger"
                         className="!px-3 !py-2 text-xs"
-                        onClick={() => setConfirmTarget({ id: r.id, nomor: r.nomor })}
+                        onClick={() => askDelete(r)}
+                        disabled={deleting}
                         title="Hapus Berita Acara ini (salah input)"
                       >
                         <Trash2 size={14} />
@@ -149,32 +157,6 @@ export default function RiwayatPage() {
           </div>
         )}
 
-        {confirmTarget && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => !deleting && setConfirmTarget(null)}>
-            <Card className="p-5 w-full max-w-sm max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-9 h-9 rounded-full bg-[var(--color-alert-50)] flex items-center justify-center shrink-0">
-                  <AlertTriangle size={18} className="text-[var(--color-alert-600)]" />
-                </div>
-                <div>
-                  <h3 className="font-display font-semibold text-[var(--color-navy-900)]">Hapus Berita Acara?</h3>
-                  <p className="text-sm text-slate-500 mt-1">
-                    Nomor <span className="font-mono">{confirmTarget.nomor}</span> akan dihapus permanen — beserta
-                    data pemakaian & rekapnya di Dashboard. File Word/PDF yang sudah pernah didownload
-                    tidak ikut terhapus dari perangkat Anda, tapi link-nya tidak akan berfungsi lagi.
-                    Tindakan ini <span className="font-semibold">tidak bisa dibatalkan</span>.
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
-                <Button variant="ghost" onClick={() => setConfirmTarget(null)} disabled={deleting}>Batal</Button>
-                <Button variant="danger" onClick={doDelete} disabled={deleting}>
-                  {deleting ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />} Ya, Hapus
-                </Button>
-              </div>
-            </Card>
-          </div>
-        )}
       </div>
     </Layout>
   );

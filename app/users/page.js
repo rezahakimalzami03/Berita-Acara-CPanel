@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import Layout from '@/components/Layout';
 import { api } from '@/lib/api-client';
 import { Card, Button, Input, Select, Pill } from '@/components/ui';
+import { confirmAction, alertError, alertWarning, alertSuccess } from '@/lib/alert';
 import { Plus, Loader2, AlertTriangle, Pencil, Check, X, ShieldAlert, KeyRound, UserX, UserCheck, Warehouse } from 'lucide-react';
 
 const emptyForm = { username: '', password: '', namaLengkap: '', role: 'petugas' };
@@ -45,14 +46,26 @@ export default function UsersPage() {
     return { ...a, selected: sel };
   });
   const saveAkses = async () => {
+    const n = akses.selected.size;
+    const ok = await confirmAction({
+      title: 'Simpan hak akses?',
+      html: n === 0
+        ? `<b>${akses.user.nama_lengkap}</b> tidak akan punya akses ke ruangan manapun, jadi tidak bisa membuat Berita Acara maupun melihat data.`
+        : `<b>${akses.user.nama_lengkap}</b> akan diberi akses ke <b>${n}</b> ruangan.`,
+      confirmText: 'Ya, simpan',
+      icon: n === 0 ? 'warning' : 'question',
+      danger: n === 0,
+    });
+    if (!ok) return;
     setAksesSaving(true);
     setAksesError('');
     try {
       await api.adminUserRuanganSet(akses.user.id, [...akses.selected]);
       setAkses(null);
-      flash('Hak akses Master Ruangan disimpan.');
+      alertSuccess('Hak akses Master Ruangan disimpan.');
     } catch (e) {
       setAksesError(e.message);
+      alertError(e.message);
     } finally {
       setAksesSaving(false);
     }
@@ -80,17 +93,27 @@ export default function UsersPage() {
 
   const createUser = async () => {
     setError('');
-    if (!newUser.username.trim() || !newUser.password || !newUser.namaLengkap.trim()) {
-      return setError('Username, password, dan nama lengkap wajib diisi.');
-    }
+    const msgs = [];
+    if (!newUser.username.trim()) msgs.push('Username wajib diisi.');
+    else if (/\s/.test(newUser.username.trim())) msgs.push('Username tidak boleh mengandung spasi.');
+    if (!newUser.namaLengkap.trim()) msgs.push('Nama lengkap wajib diisi.');
+    if (!newUser.password) msgs.push('Password wajib diisi.');
+    else if (newUser.password.length < 6) msgs.push('Password minimal 6 karakter.');
+    if (msgs.length) return alertWarning(msgs);
+    const ok = await confirmAction({
+      title: 'Buat user baru?',
+      html: `<b>${newUser.username.trim().replace(/</g, '&lt;')}</b> sebagai <b>${newUser.role === 'admin' ? 'Admin' : 'Petugas'}</b>`,
+      confirmText: 'Ya, buat user',
+    });
+    if (!ok) return;
     setCreating(true);
     try {
       await api.adminUserCreate(newUser);
       setNewUser(emptyForm);
       await load();
-      flash('User baru berhasil dibuat.');
+      alertSuccess('User baru berhasil dibuat.');
     } catch (e) {
-      setError(e.message);
+      alertError(e.message);
     } finally {
       setCreating(false);
     }
@@ -103,18 +126,39 @@ export default function UsersPage() {
 
   const saveEdit = async (id) => {
     setError('');
+    if (!(editingUser.namaLengkap || '').trim()) return alertWarning('Nama lengkap tidak boleh kosong.');
+    const lama = users.find((u) => u.id === id);
+    if (lama && lama.role !== editingUser.role) {
+      const ok = await confirmAction({
+        title: 'Ubah role user?',
+        html: `<b>${lama.username}</b>: ${lama.role} &rarr; <b>${editingUser.role}</b>`,
+        confirmText: 'Ya, ubah role',
+        icon: 'warning',
+      });
+      if (!ok) return;
+    }
     try {
       await api.adminUserUpdate(id, editingUser);
       setEditingId(null);
       await load();
-      flash('Perubahan disimpan.');
+      alertSuccess('Perubahan disimpan.');
     } catch (e) {
-      setError(e.message);
+      alertError(e.message);
     }
   };
 
   const toggleAktif = async (u) => {
     setError('');
+    const ok = await confirmAction({
+      title: u.aktif ? 'Nonaktifkan user?' : 'Aktifkan user kembali?',
+      text: u.aktif
+        ? `${u.nama_lengkap} (${u.username}) tidak akan bisa login sampai diaktifkan lagi.`
+        : `${u.nama_lengkap} (${u.username}) akan bisa login kembali.`,
+      confirmText: u.aktif ? 'Ya, nonaktifkan' : 'Ya, aktifkan',
+      icon: u.aktif ? 'warning' : 'question',
+      danger: u.aktif,
+    });
+    if (!ok) return;
     try {
       if (u.aktif) {
         await api.adminUserDelete(u.id); // soft-delete: set aktif=false
@@ -122,24 +166,32 @@ export default function UsersPage() {
         await api.adminUserUpdate(u.id, { aktif: true });
       }
       await load();
-      flash(u.aktif ? 'User dinonaktifkan.' : 'User diaktifkan kembali.');
+      alertSuccess(u.aktif ? 'User dinonaktifkan.' : 'User diaktifkan kembali.');
     } catch (e) {
-      setError(e.message);
+      alertError(e.message);
     }
   };
 
   const submitReset = async (id) => {
     setError('');
     if (!resetPassword || resetPassword.length < 6) {
-      return setError('Password baru minimal 6 karakter.');
+      return alertWarning('Password baru minimal 6 karakter.');
     }
+    const target = users.find((u) => u.id === id);
+    const ok = await confirmAction({
+      title: 'Reset password?',
+      text: `Password ${target ? target.username : 'user ini'} akan diganti dengan yang baru.`,
+      confirmText: 'Ya, reset',
+      icon: 'warning',
+    });
+    if (!ok) return;
     try {
       await api.adminUserUpdate(id, { password: resetPassword });
       setResetId(null);
       setResetPassword('');
-      flash('Password berhasil direset.');
+      alertSuccess('Password berhasil direset.');
     } catch (e) {
-      setError(e.message);
+      alertError(e.message);
     }
   };
 
